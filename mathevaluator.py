@@ -107,6 +107,21 @@ class mathevaluatorCommand(sublime_plugin.TextCommand):
 		for region in self.view.sel():
 			if not region.empty():
 				s = self.view.substr(region)
+				original_s = s
+				ends_with_space = s[-1] == " "
+				s = s.strip()
+				maybe_space = "" if ends_with_space else " "
+
+				keep_expr = False
+				if s[-1] == "=":
+					keep_expr = True
+					s = s[:-1].strip()
+
+				if "." in s and "," in s:
+					return
+				if "," in s:
+					s = s.replace(",", ".")
+
 				strlen = len(s)
 				i = 0
 				while i != strlen:
@@ -129,7 +144,10 @@ class mathevaluatorCommand(sublime_plugin.TextCommand):
 					dotpos = evaluated.find('.')
 					if dotpos != -1:
 						evaluated = evaluated[:dotpos + 5]
-					self.view.replace(edit, region, evaluated)
+					if keep_expr:
+						self.view.replace(edit, region, original_s + maybe_space + evaluated)
+					else:
+						self.view.replace(edit, region, evaluated)
 
 # module pyparsing.py
 #
